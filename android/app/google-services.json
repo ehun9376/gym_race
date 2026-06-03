@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "756579054445",
+    "project_id": "voice-fitness-5e822",
+    "storage_bucket": "voice-fitness-5e822.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756579054445:android:b91dc72bea005176c0e064",
+        "android_client_info": {
+          "package_name": "com.vipcart.gym_race"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRvsRVg8aM0JVmrvh6oj10VX3Z6TgkOk4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

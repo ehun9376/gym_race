@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter clean:*)",
+      "Bash(pod install:*)",
+      "Bash(tree:*)",
+      "Bash(flutter pub run:*)",
+      "Bash(find:*)",
+      "Bash(dart analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(git stash:*)",
+      "WebSearch",
+      "Bash(/tmp/test_analysis.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(wc -l /Users/joh/aeroride_passenger_app/lib/feature/account/domain/usecases/*.dart)",
+      "Bash(grep -n \"submitReservation\\\\|HomeViewModel\\\\|homeViewModel\\\\|home_view_model\" /Users/joh/aeroride_passenger_app/lib/feature/reservation/present/pages/*.dart)",
+      "Bash(grep -E '\\(text:|title:|message:|placeHolder:|buttonText:|hint:|leftButtonText:|rightButtonText:|subTitle:|subtitle:|\\\\$\\\\{\"\"\"\"|\\\\.tr\\\\\\(\\\\\\)\\)')",
+      "Bash(grep -vE '^\\(index|adultCount|childCount|infantCount|adult|child|infant\\)$')",
+      "Read(//Users/joh/vipcar-ios/fastlane/**)",
+      "Bash(cp /Users/joh/vipcar-ios/fastlane/AuthKey_48A3P88CPL.p8 /Users/joh/aeroride_passenger_app/fastlane/)",
+      "Bash(cp /Users/joh/vipcar-ios/fastlane/key.json /Users/joh/aeroride_passenger_app/fastlane/)",
+      "Bash(ruby --version)",
+      "Bash(pod --version)",
+      "Bash(gem --version)",
+      "Bash(gem environment:*)",
+      "Bash(/opt/homebrew/bin/gem install:*)",
+      "Read(//opt/homebrew/Cellar/ruby/4.0.1/bin/**)",
+      "Read(//opt/homebrew/Cellar/ruby/**)",
+      "Bash(/opt/homebrew/opt/ruby/bin/gem install:*)",
+      "Read(//opt/homebrew/**)",
+      "Bash(/opt/homebrew/lib/ruby/gems/4.0.0/bin/pod --version)",
+      "Read(//Users/joh/**)",
+      "Bash(/opt/homebrew/opt/ruby/bin/gem list:*)",
+      "Bash(head -20 /Users/joh/aeroride_passenger_app/test/feature/order/data/*.dart)"
+    ],
+    "additionalDirectories": [
+      "/Users/joh/vipcar-android/fastlane",
+      "Read(//Users/joh/aeroride_passenger_app/**)",
+      "Bash(sed -i '' 's/\"\"label_waypoints\"\": \"\"中途有停靠點\"\"/\"\"label_waypoints\"\": \"\"中途共有{count}個停靠點\"\"/' /Users/joh/aeroride_passenger_app/asset/translations/zh-TW.json)",
+      "Bash(sed -i '' 's/\"\"label_waypoints\"\": \"\"Stops along the way\"\"/\"\"label_waypoints\"\": \"\"With {count} intermediate stops\"\"/' /Users/joh/aeroride_passenger_app/asset/translations/en-US.json)",
+      "Bash(sed -i '' 's/\"\"label_waypoints\"\": \"\"途中停車あり\"\"/\"\"label_waypoints\"\": \"\"途中{count}か所の停車地点あり\"\"/' /Users/joh/aeroride_passenger_app/asset/translations/ja-JP.json)",
+      "Bash(sed -i '' 's/\"\"title_comment\"\": \"\"Details \\(optional\\)\"\"/\"\"title_comment\"\": \"\"Additional description or notes\"\"/' /Users/joh/aeroride_passenger_app/asset/translations/en-US.json)",
+      "Bash(sed -i '' 's/\"\"title_comment\"\": \"\"詳細（任意）\"\"/\"\"title_comment\"\": \"\"詳細説明や補足\"\"/' /Users/joh/aeroride_passenger_app/asset/translations/ja-JP.json)"
+    ]
+  }
+}

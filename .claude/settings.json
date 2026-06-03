@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r --include=*.dart -n -e \"msg_address_required\" -e \"msg_avatar_update_success\" -e \"msg_country_code_required\" -e \"msg_error_order_fetch\" -e \"msg_esim_invalid_selection\" -e \"msg_invalid_luggage\" -e \"msg_invalid_parameters\" -e \"msg_invalid_people\" -e \"msg_mobile_required\" -e \"msg_name_required\" -e \"msg_please_enter_valid_email\" -e \"msg_success\" -e \"msg_unknown_error\" -e \"update_message\" /Users/joh/aeroride_passenger_app/lib/)"
+    ]
+  }
+}

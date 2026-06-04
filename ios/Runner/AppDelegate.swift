@@ -1,6 +1,12 @@
 import Flutter
 import UIKit
 
+/// App Group + 暫存 key：在「捷徑/App Intent」與「Flutter App」間傳遞語音文字。
+/// 定義在此（必在 Runner target 內），RecordWorkoutIntent.swift 加入 target 後共用。
+/// 需在 Xcode → Signing & Capabilities 為 Runner 加上 App Group：group.com.vipcart.gymRace
+let kAppGroupId = "group.com.vipcart.gymRace"
+let kPendingVoiceTextKey = "pending_voice_text"
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   private let voiceChannelName = "gym_race/voice"

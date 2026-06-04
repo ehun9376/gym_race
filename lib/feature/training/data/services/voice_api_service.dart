@@ -3,7 +3,7 @@ import "dart:convert";
 import "package:http/http.dart" as http;
 
 import "../../../../core/config/api_config.dart";
-import "../../../../core/log/logger.dart";
+import "../../../../core/utility/logger.dart";
 import "../models/voice_log_result.dart";
 
 /// 呼叫後端 parseVoiceLog 的 API 服務（singleton）。

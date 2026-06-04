@@ -10,4 +10,7 @@ class ApiConfig {
 
   /// 語音紀錄解析 API（HTTPS POST）
   static String get parseVoiceLog => "$_base/parseVoiceLog";
+
+  /// 動作清單 API（HTTPS GET，含 synonyms 供本機即時校正）
+  static String get getExercises => "$_base/getExercises";
 }

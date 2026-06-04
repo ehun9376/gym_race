@@ -45,5 +45,21 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>需要使用麥克風來進行語音記錄訓練</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>需要語音辨識將你說的訓練內容轉成文字</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Google 登入 OAuth 回呼（= GoogleService-Info.plist 的 REVERSED_CLIENT_ID）-->
+				<string>com.googleusercontent.apps.756579054445-8hjepg2najmok97nprjpvcftvdav256c</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

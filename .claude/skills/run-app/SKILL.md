@@ -1,125 +1,102 @@
 ---
 name: run-app
-description: Launch and drive the AeroRide passenger Flutter app on the iOS simulator to verify a change works. Use when asked to run/start/screenshot the app, confirm a fix works in the real app, or verify UI behaviour. Covers simulator launch, log capture, screenshots, and UI driving via idb.
+description: Launch and drive the gym_race voice-fitness Flutter app on the iOS simulator to verify a change works. Use when asked to run/start/screenshot the app, confirm a fix works in the real app, or verify UI behaviour (e.g. the voice-record flow + 1RM result + history list).
 ---
 
-# Run the AeroRide passenger app (iOS simulator)
+# Run the gym_race app (iOS simulator)
 
-Flutter app. Verified launch target: **iOS simulator** (debug). This is the
-fastest loop for screenshots + UI driving; physical devices need wireless
-trust and Developer Mode and are flaky for automation.
+Flutter voice-fitness app. Backend = Cloud SQL (Postgres) via Firebase
+Functions; identity = Firebase **anonymous** auth. Home screen is
+`VoiceRecordPage` ("語音記錄訓練").
+
+Verified launch target: **iOS simulator** (debug). Note the simulator has **no
+microphone / Speech recognition**, so the 🎤 "語音輸入" (STT) button won't
+produce text there — drive the flow by **typing into the text field** and
+tapping **✓ 記錄** instead.
 
 ## 1. Pick / boot a simulator
 
 ```bash
-# Already-booted simulator (preferred):
 xcrun simctl list devices booted | grep -i booted
-# If none booted, boot one and open Simulator.app:
+# If none booted:
 xcrun simctl boot "iPhone 16e" 2>/dev/null; open -a Simulator
 ```
-
-Grab the UDID from the booted line (e.g. `80B90B39-7D77-4C3C-9F9B-2DD82AB2C1A4`).
+Grab the UDID from the booted line.
 
 ## 2. Launch in the background with a FIFO stdin (enables hot reload)
 
-`flutter run` is long-lived — never run it foreground. Launch it reading stdin
-from a FIFO so you can send `r` (hot reload) / `R` (hot restart) **without
-rebuilding** after edits (no tmux on this machine).
+`flutter run` is long-lived — never run it foreground. CocoaPods on this Mac
+needs a UTF-8 locale or `pod install` crashes (Encoding::CompatibilityError),
+so export LANG/LC_ALL.
 
 ```bash
-cd /Users/joh/aeroride_passenger_app
-rm -f /tmp/flutter_in /tmp/flutter_run.log; mkfifo /tmp/flutter_in
-nohup sh -c 'tail -f /dev/null > /tmp/flutter_in' >/dev/null 2>&1 &   # holder: keeps FIFO open so flutter doesn't get EOF
-nohup sh -c 'flutter run -d <UDID> --debug < /tmp/flutter_in > /tmp/flutter_run.log 2>&1' >/dev/null 2>&1 &
+cd /Users/joh/gym_race
+export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+rm -f /tmp/gr_in /tmp/gr_run.log; mkfifo /tmp/gr_in
+nohup sh -c 'tail -f /dev/null > /tmp/gr_in' >/dev/null 2>&1 &   # FIFO holder (keeps stdin open)
+nohup sh -c 'cd /Users/joh/gym_race && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 flutter run -d <UDID> --debug < /tmp/gr_in > /tmp/gr_run.log 2>&1' >/dev/null 2>&1 &
 ```
 
-**After editing Dart files, hot reload instead of relaunching** (user asked for this):
-```bash
-echo r > /tmp/flutter_in   # hot reload; use R for hot restart
-```
-Wait ~1-2s, then screenshot. Hot reload re-runs build() so UI/layout changes
-apply; it does NOT re-run main()/initState of existing State or DI. Use `R`
-(hot restart) when you changed initState, provider wiring, or app-startup code.
-Full relaunch only when you changed native/pubspec or hot restart misbehaves.
-Stop everything with `pkill -f "flutter_tools.snapshot run"` (the holder dies on its own / `rm /tmp/flutter_in`).
+After editing Dart files: `echo r > /tmp/gr_in` (hot reload) or `echo R`
+(hot restart — use when you changed initState / DI / provider wiring).
+Stop: `pkill -f "flutter_tools.snapshot run"` (FIFO holder dies on its own).
 
-First build runs `pod install` + Xcode build (~80s clean). Wait for readiness
-with a Bash `run_in_background` until-loop (do NOT chain sleeps):
+First simulator build runs pod install + Xcode build (several minutes — many
+plugins: firebase, maps, video_player…). Wait with a background until-loop:
 
 ```bash
-until grep -qE "Dart VM Service|Syncing files|Error|error:|Exception" /tmp/flutter_run.log; do sleep 3; done
-tail -25 /tmp/flutter_run.log
+until grep -qE "Dart VM Service|Syncing files|Error|error:|Exception|Lost connection" /tmp/gr_run.log; do sleep 5; done
+tail -30 /tmp/gr_run.log
 ```
-
-Success markers: `Flutter run key commands.` + `Dart VM Service ... available at`.
-The app prints `🔒 Firebase App Check Token:` once `GetItService.init()` and
-startup finish cleanly — a good "no startup crash" signal.
-
-Hot reload after edits: `echo "r" >> ` won't work (detached). Re-launch, or
-run `flutter run` in a tmux pane if you need interactive `r`/`R`.
+Success markers: `Flutter run key commands.` + `A Dart VM Service ... is available at`.
 
 ## 3. Screenshot (look at it!)
 
 ```bash
-xcrun simctl io booted screenshot /tmp/sim.png
+xcrun simctl io booted screenshot /tmp/gr.png
 ```
-
-Then Read /tmp/sim.png. A grey screen with a permission dialog = launched OK
-but blocked on a native prompt (see step 4).
+Then Read /tmp/gr.png. Expect the "語音記錄訓練" page: hint card, an input
+field, 🎤 語音輸入 / ✓ 記錄 buttons, a 匿名 chip top-right, and (after logging)
+a 1RM result card + 歷史紀錄 list.
 
 ## 4. Drive the UI with idb
 
-`xcrun simctl` cannot tap. Use **idb** (installed at
-`~/Library/Python/3.9/bin/idb`, not on PATH; needs `idb_companion` from
-`brew install facebook/fb/idb-companion`).
+`xcrun simctl` cannot tap. Use **idb** (at `~/Library/Python/3.9/bin/idb`, not
+on PATH; needs `idb_companion`).
 
 ```bash
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
-idb connect <UDID> 2>/dev/null        # one-time per session
-idb ui tap <x> <y> --udid <UDID>      # coords are in SCREEN points, not screenshot px
-idb ui text "some text" --udid <UDID> # type into focused field
-idb ui describe-all --udid <UDID>     # dump the a11y tree to find tappable element frames
+idb connect <UDID> 2>/dev/null
+idb ui describe-all --udid <UDID>     # find element frames (points)
+idb ui tap <x> <y> --udid <UDID>      # tap (SCREEN points, not screenshot px)
+idb ui text "槓鈴臥推 60 公斤 6 下 體感 8" --udid <UDID>  # type into focused field
 ```
 
-Screenshot is at device pixel resolution (e.g. 1179 wide); idb taps use
-points. Use `idb ui describe-all` to read each element's `frame` (already in
-points) instead of converting screenshot pixels.
+## 5. Verify the voice-log flow end-to-end
 
-**Notification permission prompt** on first launch — either tap 允許/不允許
-via idb, or pre-grant before launch:
-`xcrun simctl privacy booted grant notifications com.<bundle-id>`.
+1. Tap the input field → `idb ui text "槓鈴臥推 60 公斤 6 下 體感 8"`.
+2. Tap **✓ 記錄**.
+3. Screenshot → expect a 1RM card (bench_press_barbell, 1RM 69.7) and the row
+   appended to 歷史紀錄.
+4. Confirm the backend write hit Postgres (a new `training_logs` row with the
+   app's anonymous uid). Quick check from `gym_race_api/functions`:
+   ```bash
+   # connection: host 34.81.223.44 / db gym_race / user postgres / sslmode no-verify
+   # query: select id,user_id,exercise_id,one_rm_est from training_logs order by id desc limit 3;
+   ```
+5. **History persistence**: hot restart (`echo R > /tmp/gr_in`) → the 歷史紀錄
+   list should still show prior entries (local cache via shared_preferences,
+   keyed by the persisted anonymous uid).
 
-## 5. Stop the app
-
+Grep the run log to confirm the API fired / parsed:
 ```bash
-pkill -f "flutter_tools.snapshot run"
+grep -E "語音紀錄|紀錄成功|parseVoiceLog" /tmp/gr_run.log
 ```
 
-## Verifying the "進行中訂單 / 即時路線追蹤" feature
+## Gotchas
 
-Requires a **logged-in account** with a live in-progress order on the backend
-(`/profile/order/during` returns a non-empty list, and that order has driver
-status). Without that the entry points (home row / order-page progress card /
-"進行中" section) correctly render nothing.
-
-Grep the log to confirm the API fires and parses:
-
-```bash
-grep -E "🚗 取得進行中訂單|✅ 進行中訂單載入成功|進度卡片輪詢" /tmp/flutter_run.log
-```
-
-Entry points and expected screens:
-- Home page top row → taps into `TripTrackingPage` (圖二 → 圖三)
-- Order page bottom progress card + "進行中" section (圖一)
-- Tracking page flight card → flight-info modal sheet (圖三 → 圖四)
-
-Driving the full flow needs login (phone OTP) — ask the user for a test
-account / pre-seeded in-progress order if a full visual pass is required.
-
-## Gotchas captured from setup
-
-- `idb-companion` is no longer in homebrew-core; install from the
-  `facebook/fb` tap.
-- `timeout` is not available by default on this Mac (no coreutils) — don't
-  wrap commands in it.
+- Simulator has no mic/STT — drive via the text field, not 🎤.
+- `pod install` needs `LANG=en_US.UTF-8` or it crashes with an encoding error.
+- `idb-companion` from the `facebook/fb` tap; `timeout` is unavailable on this Mac.
 - A new Flutter version banner prints on every command; ignore it.
+```

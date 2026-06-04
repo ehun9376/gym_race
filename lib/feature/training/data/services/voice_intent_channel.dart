@@ -1,6 +1,6 @@
 import "package:flutter/services.dart";
 
-import "../../../../core/log/logger.dart";
+import "../../../../core/utility/logger.dart";
 
 /// 與 iOS 原生 App Intent / 捷徑 溝通的 MethodChannel。
 /// App 被 Siri/捷徑 喚醒後，呼叫此處取出待處理的語音文字。
@@ -21,7 +21,7 @@ class VoiceIntentChannel {
       Logger.log("收到捷徑語音文字：$text");
       return text;
     } on PlatformException catch (e, s) {
-      Logger.error("❌ 讀取捷徑語音文字失敗", error: e, stackTrace: s);
+      Logger.error("❌ 讀取捷徑語音文字失敗: $e", stackTrace: s);
       return null;
     } on MissingPluginException {
       // 非 iOS 或尚未實作該平台

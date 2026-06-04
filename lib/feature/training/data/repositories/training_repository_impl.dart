@@ -1,4 +1,4 @@
-import "../../../../core/log/logger.dart";
+import "../../../../core/utility/logger.dart";
 import "../../../../core/result/default_result.dart";
 import "../../../auth/data/services/auth_service.dart";
 import "../../domain/repositories/training_repository.dart";
@@ -34,7 +34,7 @@ class TrainingRepositoryImpl implements TrainingRepository {
       Logger.endGroup();
       return result;
     } catch (e, s) {
-      Logger.error("❌ 語音紀錄失敗", error: e, stackTrace: s);
+      Logger.error("❌ 語音紀錄失敗: $e", stackTrace: s);
       Logger.endGroup();
       return DefaultResult.fail(message: "msg_voice_log_failed");
     }

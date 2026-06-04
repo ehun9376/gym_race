@@ -1,6 +1,7 @@
 import "package:firebase_auth/firebase_auth.dart";
+import "package:google_sign_in/google_sign_in.dart";
 
-import "../../../../core/log/logger.dart";
+import "../../../../core/utility/logger.dart";
 import "../../../../core/result/default_result.dart";
 
 /// 身分驗證服務（singleton，依 CLAUDE.md：APIService/Service 用 singleton）。
@@ -33,7 +34,7 @@ class AuthService {
       }
       return DefaultResult.ok(data: uid);
     } on FirebaseAuthException catch (e, s) {
-      Logger.error("❌ 匿名登入失敗", error: e, stackTrace: s);
+      Logger.error("❌ 匿名登入失敗: $e", stackTrace: s);
       return DefaultResult.fail(message: "msg_sign_in_failed");
     }
   }
@@ -54,7 +55,7 @@ class AuthService {
       }
       return DefaultResult.ok(data: token);
     } on FirebaseAuthException catch (e, s) {
-      Logger.error("❌ 取得 ID Token 失敗", error: e, stackTrace: s);
+      Logger.error("❌ 取得 ID Token 失敗: $e", stackTrace: s);
       return DefaultResult.fail(message: "msg_token_failed");
     }
   }
@@ -78,7 +79,7 @@ class AuthService {
       Logger.log("AuthService: 匿名升級成功 uid=${result.user?.uid}");
       return DefaultResult.ok(data: result.user?.uid ?? user.uid);
     } on FirebaseAuthException catch (e, s) {
-      Logger.error("❌ 帳號綁定失敗", error: e, stackTrace: s);
+      Logger.error("❌ 帳號綁定失敗: $e", stackTrace: s);
       // email-already-in-use / credential-already-in-use 等
       return DefaultResult.fail(message: "msg_link_failed");
     }
@@ -96,7 +97,66 @@ class AuthService {
       final result = await user.linkWithCredential(credential);
       return DefaultResult.ok(data: result.user?.uid ?? user.uid);
     } on FirebaseAuthException catch (e, s) {
-      Logger.error("❌ OAuth 綁定失敗", error: e, stackTrace: s);
+      Logger.error("❌ OAuth 綁定失敗: $e", stackTrace: s);
+      return DefaultResult.fail(message: "msg_link_failed");
+    }
+  }
+
+  /// 取得 Google 憑證（google_sign_in 6.x）。
+  /// iOS 端會自動從 GoogleService-Info.plist 讀取 clientId。
+  /// 使用者取消時回傳 null。
+  Future<AuthCredential?> _googleCredential() async {
+    final account = await GoogleSignIn().signIn();
+    if (account == null) {
+      return null; // 使用者取消
+    }
+    final auth = await account.authentication;
+    return GoogleAuthProvider.credential(
+      idToken: auth.idToken,
+      accessToken: auth.accessToken,
+    );
+  }
+
+  /// 以 Google 登入為正式帳號。
+  Future<DefaultResult<String>> signInWithGoogle() async {
+    try {
+      final credential = await _googleCredential();
+      if (credential == null) {
+        return DefaultResult.fail(message: "msg_sign_in_cancelled");
+      }
+      final result = await _auth.signInWithCredential(credential);
+      final uid = result.user?.uid;
+      if (uid == null) {
+        return DefaultResult.fail(message: "msg_sign_in_failed");
+      }
+      Logger.log("AuthService: Google 登入成功 uid=$uid");
+      return DefaultResult.ok(data: uid, message: "msg_sign_in_success");
+    } on FirebaseAuthException catch (e, s) {
+      Logger.error("❌ Google 登入失敗: $e", stackTrace: s);
+      return DefaultResult.fail(message: "msg_sign_in_failed");
+    }
+  }
+
+  /// 匿名升級：把目前匿名帳號綁定為 Google 正式帳號（uid 不變、資料保留）。
+  /// 用於匿名用戶點「加入排行榜 / 升級正式帳號」時。
+  Future<DefaultResult<String>> linkGoogle() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || !user.isAnonymous) {
+        return DefaultResult.fail(message: "msg_link_not_allowed");
+      }
+      final credential = await _googleCredential();
+      if (credential == null) {
+        return DefaultResult.fail(message: "msg_sign_in_cancelled");
+      }
+      final result = await user.linkWithCredential(credential);
+      Logger.log("AuthService: Google 升級成功 uid=${result.user?.uid}");
+      return DefaultResult.ok(
+        data: result.user?.uid ?? user.uid,
+        message: "msg_link_success",
+      );
+    } on FirebaseAuthException catch (e, s) {
+      Logger.error("❌ Google 綁定失敗: $e", stackTrace: s);
       return DefaultResult.fail(message: "msg_link_failed");
     }
   }

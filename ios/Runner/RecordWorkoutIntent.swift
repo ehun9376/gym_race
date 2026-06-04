@@ -1,11 +1,8 @@
 import AppIntents
 import Foundation
 
-/// App Group：用來在「捷徑/Intent」與「Flutter App」之間傳遞語音文字。
-/// 需在 Xcode → Signing & Capabilities 為 Runner 與（若有）Intent target
-/// 都加上同一個 App Group：group.com.vipcart.gymRace
-let kAppGroupId = "group.com.vipcart.gymRace"
-let kPendingVoiceTextKey = "pending_voice_text"
+// 註：kAppGroupId / kPendingVoiceTextKey 定義在 AppDelegate.swift（同 module 共用）。
+// 此檔需在 Xcode 加入 Runner target（Target Membership 打勾）才會被編譯與生效。
 
 /// Siri / 捷徑 喚醒用的 App Intent（iOS 16+）。
 ///

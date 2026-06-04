@@ -2,6 +2,8 @@ import "package:get_it/get_it.dart";
 
 import "../../feature/auth/data/services/auth_service.dart";
 import "../../feature/training/data/repositories/training_repository_impl.dart";
+import "../../feature/training/data/services/local_log_cache.dart";
+import "../../feature/training/data/services/speech_service.dart";
 import "../../feature/training/data/services/voice_api_service.dart";
 import "../../feature/training/domain/repositories/training_repository.dart";
 import "../../feature/training/domain/usecases/log_voice_usecase.dart";
@@ -19,6 +21,8 @@ class GetItService {
     // ── Services（singleton）──
     getIt.registerLazySingleton<AuthService>(() => AuthService());
     getIt.registerLazySingleton<VoiceApiService>(() => VoiceApiService());
+    getIt.registerLazySingleton<SpeechService>(() => SpeechService());
+    getIt.registerLazySingleton<LocalLogCache>(() => LocalLogCache());
 
     // ── Repository（factory）──
     getIt.registerFactory<TrainingRepository>(
@@ -35,7 +39,11 @@ class GetItService {
 
     // ── ViewModel（factory）──
     getIt.registerFactory<VoiceRecordViewModel>(
-      () => VoiceRecordViewModel(getIt<LogVoiceUseCase>()),
+      () => VoiceRecordViewModel(
+        getIt<LogVoiceUseCase>(),
+        getIt<AuthService>(),
+        getIt<LocalLogCache>(),
+      ),
     );
   }
 }

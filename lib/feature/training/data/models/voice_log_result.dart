@@ -22,7 +22,8 @@ class VoiceLogResult {
   factory VoiceLogResult.fromJson(Map<String, dynamic> json) {
     final data = (json["data"] as Map<String, dynamic>?) ?? {};
     return VoiceLogResult(
-      logId: json["log_id"] as String? ?? "",
+      // 後端改 Postgres 後 log_id 為數字(bigserial)，用 toString 同時相容字串/數字
+      logId: json["log_id"]?.toString() ?? "",
       parsedBy: json["parsed_by"] as String? ?? "",
       exerciseId: data["exercise_id"] as String? ?? "",
       weight: (data["weight"] as num?)?.toDouble() ?? 0.0,
